@@ -36,7 +36,8 @@ window.addEventListener('gamepaddisconnected', (event) => {
         const gamepad = gamepads[i];
         if (!gamepad) continue;
 
-        // Check button states
+        console.log('updateGamepadStatus');
+		// Check button states
         gamepad.buttons.forEach((button, index) => {
           if (button.pressed && !buttonStates[index]) {
             if (index === 1) { // B button is typically index 1
@@ -195,6 +196,7 @@ document.getElementById("localgunshot").onmousedown = () => {
 
     // Define actions for specific button indices
     function handleButtonPress(gamepadIndex, buttonIndex) {
+	console.log(`gamepad pressed down.`);
       switch(buttonIndex) {
         case 0: // A button on most controllers
           console.log(`Gamepad ${gamepadIndex}: A button pressed.`);
