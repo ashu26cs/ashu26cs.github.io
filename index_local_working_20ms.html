@@ -6,6 +6,7 @@
 <body>
     <p id="instructions"></p>
     <div id="test"></div>
+    <div id="log"></div>
 </body>
 <input type="button" value="Start" id="start" />
 <input type="button" value="Stop" id="stop" />
@@ -17,7 +18,50 @@
 
 
 <script>
-var pc1,pc2,ctx, micCaptureStream, audio,oscillator,pannode,dst,gainnode;
+let buttonStates = new Array(16).fill(false);
+
+window.addEventListener('gamepadconnected', (event) => {
+      console.log(`Gamepad connected at index ${event.gamepad.index}: ${event.gamepad.id}.`);
+      console.log(`Buttons: ${event.gamepad.buttons.length}, Axes: ${event.gamepad.axes.length}`);
+      updateGamepadStatus();
+    });
+
+window.addEventListener('gamepaddisconnected', (event) => {
+      console.log(`Gamepad disconnected from index ${event.gamepad.index}: ${event.gamepad.id}`);
+    });
+
+    function updateGamepadStatus() {
+      const gamepads = navigator.getGamepads();
+      for (let i = 0; i < gamepads.length; i++) {
+        const gamepad = gamepads[i];
+        if (!gamepad) continue;
+
+        // Check button states
+        gamepad.buttons.forEach((button, index) => {
+          if (button.pressed && !buttonStates[index]) {
+            if (index === 1) { // B button is typically index 1
+                handleButtonPress(gamepad.index, index);
+            }
+            buttonStates[index] = true;
+          } else if (!button.pressed && buttonStates[index]) {
+            buttonStates[index] = false;
+          }
+        });
+      }
+
+      // Continue polling for gamepad status
+      requestAnimationFrame(updateGamepadStatus);
+    }
+
+        // Start polling when the page loads
+    if (navigator.getGamepads) {
+      console.log("Gamepad API supported");
+      updateGamepadStatus();
+    } else {
+      console.log("Your browser doesn't support the Gamepad API.");
+    }
+
+var pc1,pc2,ctx, micCaptureStream, audio,oscillator,pannode,dst,gainnode, remoteplay = false;
 ctx = new AudioContext();
 //ctx.suspend();
 
@@ -124,6 +168,7 @@ document.getElementById("remoteplay").onmousedown = () => {
 		gainnode.connect(dst);
 		oscillator.start();
 		audio.play();
+        remoteplay = true;
 }
 
 document.getElementById("remotegunshot").onmousedown = () => {
@@ -146,6 +191,37 @@ document.getElementById("localgunshot").onmousedown = () => {
         source.connect(ctx.destination);
 		source.start();
 }
+
+    // Define actions for specific button indices
+    function handleButtonPress(gamepadIndex, buttonIndex) {
+      switch(buttonIndex) {
+        case 0: // A button on most controllers
+          console.log(`Gamepad ${gamepadIndex}: A button pressed.`);
+          // Add your action here
+          break;
+        case 1: // B button on most controllers
+        var source = ctx.createBufferSource();
+        // set the buffer in the AudioBufferSourceNode
+		source.buffer = myArrayBuffer;
+        if (remoteplay == true)
+       {
+        source.connect(dst);
+       }
+       else
+       {
+        source.connect(ctx.destination);
+       }
+        source.start();  
+        console.log(`Gamepad ${gamepadIndex}: B button pressed.`);
+        // Add your action here
+          break;
+        // Add more cases for other buttons as needed.
+        default:
+          console.log(`Gamepad ${gamepadIndex}: Button ${buttonIndex} pressed.`);
+      }
+    }
+
+
 </script>   
 </html>
 </script>   
